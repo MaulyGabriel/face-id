@@ -4,7 +4,8 @@ from recognition import Recognition
 
 from bsutils.board import BoardSerial
 
-logging.basicConfig(filename='app.log', format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+logging.basicConfig(filename='/home/pi/prod/rec-facial/app.log', format='%(asctime)s - %(message)s',
+                    datefmt='%d-%b-%y %H:%M:%S')
 
 
 class App:

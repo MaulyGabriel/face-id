@@ -12,7 +12,8 @@ from imutils.video import FPS
 from imutils.video import VideoStream
 from bsutils.board import BoardSerial
 
-logging.basicConfig(filename='recognition.log', format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+logging.basicConfig(filename='/home/pi/prod/rec-facial/recognition.log', format='%(asctime)s - %(message)s',
+                    datefmt='%d-%b-%y %H:%M:%S')
 
 
 class Recognition:
@@ -109,7 +110,6 @@ class Recognition:
         while True:
 
             if actions[3] and actions[4]:
-
                 self.board.send_message(serial, self.board.SEND_OK)
 
                 alt_person = old_person
@@ -146,7 +146,6 @@ class Recognition:
                         path_move = '{}{}.{}.{}.jpg'.format(self.old, code, name, self.timestamp)
 
                         if os.path.isfile(path_image):
-
                             shutil.move(path_image, path_move)
 
                     final_name = '{}{}.{}.jpg'.format(self.path, code, info[4])
@@ -203,7 +202,6 @@ class Recognition:
                     if old_person == 0 and actions[3]:
 
                         if old_person in codes_persons:
-
                             idx = codes_persons.index(alt_person)
                             del codes_persons[idx]
                             del names_persons[idx]

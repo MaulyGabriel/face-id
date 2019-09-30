@@ -7,7 +7,8 @@ import numpy as np
 from time import time
 import face_recognition as fr
 
-logging.basicConfig(filename='train.log', format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+logging.basicConfig(filename='/home/pi/prod/rec-facial/train.log', format='%(asctime)s - %(message)s',
+                    datefmt='%d-%b-%y %H:%M:%S')
 
 
 class Person:
@@ -70,7 +71,7 @@ class Person:
         np.save(self.models['images'], self.faces)
         np.save(self.models['names'], self.names)
 
-        logging.error(self.log.format('Finish', round(time()-init, 2)))
+        logging.error(self.log.format('Finish', round(time() - init, 2)))
 
     def train_rasp(self, show_image=False, resize=240):
 
@@ -114,4 +115,3 @@ class Person:
         np.save(self.models['names'], self.names)
 
         logging.error(self.log.format('Finish', round(time() - init, 2)))
-
