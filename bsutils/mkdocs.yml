@@ -1,0 +1,16 @@
+# Project information
+site_name: 'bsutils'
+site_description: 'Pacote para comunicação wifi e serial'
+site_author: 'Gabriel Mauly'
+
+theme:
+  name: 'material'
+  palette:
+    primary: 'green'
+    accent: 'orange'
+  language: 'pt'
+
+plugins:
+    - search
+    - pdf-export
+
