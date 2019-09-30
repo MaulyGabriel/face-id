@@ -24,12 +24,12 @@ class Recognition:
         self.font = cv2.FONT_HERSHEY_DUPLEX
         self.camera = ''
         self.name = ''
-        self.path = 'images/'
-        self.old = 'images/old/'
+        self.path = '/home/pi/prod/rec-facial/images/'
+        self.old = '/home/pi/prod/rec-facial/images/old/'
         self.models = {
-            'codes': 'models/codes.npy',
-            'images': 'models/images.npy',
-            'names': 'models/names.npy'
+            'codes': '/home/pi/prod/rec-facial/models/codes.npy',
+            'images': '/home/pi/prod/rec-facial/models/images.npy',
+            'names': '/home/pi/prod/rec-facial/models/names.npy'
         }
         self.color = (255, 255, 0)
         self.white = (255, 255, 255)
@@ -37,6 +37,7 @@ class Recognition:
         self.board = BoardSerial()
         self.timeout = 180
         self.timestamp = strftime('%Y%m%d%H%M')
+        self.codes, self.images, self.names = [], [], []
 
     def find_face(self, mean, stop, camera, fps):
 
@@ -93,10 +94,10 @@ class Recognition:
                 print('Models not found')
                 exit()
             else:
-                codes, images, names = self.load_models()
+                self.codes, self.images, self.names = self.load_models()
 
         except ValueError:
-            codes, images, names = self.load_models()
+            self.codes, self.images, self.names = self.load_models()
 
         self.camera = VideoStream(src=device).start()
         fps = FPS().start()
@@ -127,8 +128,8 @@ class Recognition:
 
                 if person.any():
 
-                    codes = list(np.load(self.models['codes']))
-                    names = list(np.load(self.models['names']))
+                    self.codes = list(np.load(self.models['codes']))
+                    self.names = list(np.load(self.models['names']))
 
                     info = info.spit(',')
 
@@ -136,10 +137,10 @@ class Recognition:
 
                     face = imutils.resize(person, width=480)
 
-                    if code in codes:
+                    if code in self.codes:
 
-                        code = codes.index(code)
-                        name = names[code]
+                        code = self.codes.index(code)
+                        name = self.names[code]
 
                         path_image = '{}{}.{}.jpg'.format(self.path, code, name)
                         path_move = '{}{}.{}.{}.jpg'.format(self.old, code, name, self.timestamp)
@@ -158,7 +159,7 @@ class Recognition:
 
                     self.person.train(show_image=None)
 
-                    codes, images, names = self.load_models()
+                    self.codes, self.images, self.names = self.load_models()
 
                 else:
                     self.board.send_message(serial, 'PNEUD,C,0,-1')
@@ -186,14 +187,14 @@ class Recognition:
 
                     for face_encoding in face_encodings:
 
-                        matches = fr.compare_faces(images, face_encoding)
+                        matches = fr.compare_faces(self.images, face_encoding)
                         self.name = "Not identified"
 
                         if True in matches:
                             person_index = matches.index(True)
-                            self.name = names[person_index]
+                            self.name = self.names[person_index]
 
-                            codes_persons.append(codes[person_index])
+                            codes_persons.append(self.codes[person_index])
                             names_persons.append(self.name)
 
                     codes_persons = list(set(codes_persons))

@@ -61,8 +61,6 @@ class App:
 
                                 if idx != -1:
 
-                                    print(self.s.digit_verify(message))
-
                                     if self.s.digit_verify(message) is True:
 
                                         if message[9] == '0':
