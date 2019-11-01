@@ -1,11 +1,7 @@
-import logging
 import multiprocessing as mp
 from recognition import Recognition
-
+from loguru import logger
 from bsutils.board import BoardSerial
-
-logging.basicConfig(filename='/home/pi/prod/rec-facial/app.log', format='%(asctime)s - %(message)s',
-                    datefmt='%d-%b-%y %H:%M:%S')
 
 
 class App:
@@ -19,7 +15,7 @@ class App:
         board = self.s.open_connection('/dev/ttyUSB0')
 
         if board is None:
-            logging.error('Serial port error')
+            logger.error('Serial port error')
 
         receive, send = mp.Pipe()
         actions = mp.Array('i', [1, 1, 0, 0, 1])
@@ -28,7 +24,7 @@ class App:
 
         r = Recognition()
         r_service = mp.Process(target=r.recognition,
-                               args=(board, actions, receive, 'rtsp://192.168.1.11:554/live/0/MAIN', True))
+                               args=(board, actions, receive, 0, True))
 
         s_service.start()
         r_service.start()
@@ -38,7 +34,7 @@ class App:
 
     def communication(self, serial, actions, data):
 
-        print('Serial start')
+        logger.info('Serial start')
 
         while True:
 
@@ -79,9 +75,9 @@ class App:
                                             pass
 
                     except UnicodeError:
-                        logging.error('Unicode error')
+                        logger.error('Unicode error')
                     except IOError:
-                        logging.error('Cable disconnected')
+                        logger.error('Cable disconnected')
 
 
 if __name__ == '__main__':

@@ -1,11 +1,16 @@
 from train import Person
+import os
 
 
-def run():
+class Test:
 
-    p = Person()
-    p.train(show_image=None)
+    def __init__(self):
+        self.p = Person()
+
+    def run(self):
+        self.p.train(show_image=False)
 
 
 if __name__ == '__main__':
-    run()
+    t = Test()
+    t.run()

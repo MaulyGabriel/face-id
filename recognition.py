@@ -3,7 +3,6 @@ import cv2
 import dlib
 import shutil
 import imutils
-import logging
 import numpy as np
 import face_recognition as fr
 from time import sleep, time, strftime
@@ -11,9 +10,7 @@ from train import Person
 from imutils.video import FPS
 from imutils.video import VideoStream
 from bsutils.board import BoardSerial
-
-logging.basicConfig(filename='/home/pi/prod/rec-facial/recognition.log', format='%(asctime)s - %(message)s',
-                    datefmt='%d-%b-%y %H:%M:%S')
+from loguru import logger
 
 
 class Recognition:
@@ -28,10 +25,20 @@ class Recognition:
         self.path = '/home/pi/prod/rec-facial/images/'
         self.old = '/home/pi/prod/rec-facial/images/old/'
         self.models = {
-            'codes': '/home/pi/prod/rec-facial/models/codes.npy',
-            'images': '/home/pi/prod/rec-facial/models/images.npy',
-            'names': '/home/pi/prod/rec-facial/models/names.npy'
+
+            'rasp': [
+                '/home/pi/prod/rec-facial/models/codes.npy',
+                '/home/pi/prod/rec-facial/models/images.npy',
+                '/home/pi/prod/rec-facial/models/names.npy'
+            ],
+
+            'pc': [
+                './models/codes.npy',
+                './models/images.npy',
+                './models/names.npy'
+            ]
         }
+
         self.color = (255, 255, 0)
         self.white = (255, 255, 255)
         self.resize = 480
@@ -57,15 +64,15 @@ class Recognition:
 
             if count == stop:
                 frame = np.array([])
-                logging.error('Time\'s up')
+                logger.error('Time\'s up')
                 break
 
             fps.update()
 
         if frame.any():
-            logging.error('successful registration')
+            logger.error('successful registration')
         else:
-            logging.error('error registering')
+            logger.error('error registering')
 
         return frame
 
@@ -73,11 +80,11 @@ class Recognition:
 
         try:
 
-            return np.load(self.models['codes']), np.load(self.models['images']), np.load(self.models['names'])
+            return np.load(self.models['pc'][0]), np.load(self.models['pc'][1]), np.load(self.models['pc'][2])
 
         except FileNotFoundError:
 
-            logging.error('Models not found')
+            logger.error('Models not found')
 
             return None, None, None
 
@@ -92,7 +99,7 @@ class Recognition:
         try:
 
             if None in self.load_models():
-                print('Models not found')
+                logger.error('Models not found')
                 exit()
             else:
                 self.codes, self.images, self.names = self.load_models()
@@ -105,11 +112,14 @@ class Recognition:
 
         sleep(0.9)
 
-        print('Camera start')
+        logger.info('Camera start')
 
         while True:
 
             if actions[3] and actions[4]:
+
+                # change turn
+
                 self.board.send_message(serial, self.board.SEND_OK)
 
                 alt_person = old_person
@@ -122,6 +132,8 @@ class Recognition:
                 actions[1] = 1
 
             if actions[2]:
+
+                # create a new person
 
                 info = data.recv()
                 person = self.find_face(mean=1.5, stop=30, camera=self.camera, fps=fps)
@@ -167,6 +179,8 @@ class Recognition:
                 actions[2] = 0
 
             while actions[1]:
+
+                # recognition a person
 
                 init = time()
 

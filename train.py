@@ -2,13 +2,10 @@ import os
 import cv2
 import glob
 import imutils
-import logging
+from loguru import logger
 import numpy as np
 from time import time
 import face_recognition as fr
-
-logging.basicConfig(filename='/home/pi/prod/rec-facial/train.log', format='%(asctime)s - %(message)s',
-                    datefmt='%d-%b-%y %H:%M:%S')
 
 
 class Person:
@@ -21,11 +18,23 @@ class Person:
         self.color = (0, 0, 0)
         self.name = ''
         self.status = ''
-        self.dataset = '/home/pi/prod/rec-facial/images'
+        self.dataset = {
+            'rasp': '/home/pi/prod/rec-facial/images',
+            'pc': './images'
+        }
         self.models = {
-            'codes': '/home/pi/prod/rec-facial/models/codes.npy',
-            'images': '/home/pi/prod/rec-facial/models/images.npy',
-            'names': '/home/pi/prod/rec-facial/models/names.npy'
+
+            'rasp': [
+                '/home/pi/prod/rec-facial/models/codes.npy',
+                '/home/pi/prod/rec-facial/models/images.npy',
+                '/home/pi/prod/rec-facial/models/names.npy'
+            ],
+
+            'pc': [
+                './models/codes.npy',
+                './models/images.npy',
+                './models/names.npy'
+            ]
         }
 
         self.log = '{} train: {} s'
@@ -34,7 +43,7 @@ class Person:
 
         init = time()
 
-        for file in glob.glob(os.path.join(self.dataset, '*jpg')):
+        for file in glob.glob(os.path.join(self.dataset['pc'], '*jpg')):
 
             image = fr.load_image_file(file)
             image = imutils.resize(image, width=resize)
@@ -45,8 +54,9 @@ class Person:
 
                 self.faces.append(fr.face_encodings(image)[0])
 
-                data = file.split('/')
-                data = data[1].split('.')
+                data = file.split('/')[-1]
+                data = data.split('.')
+                logger.info(data)
 
                 self.codes.append(data[0])
                 self.names.append(data[1])
@@ -59,7 +69,7 @@ class Person:
                 self.name = file[7:]
                 self.color = (0, 0, 255)
 
-                logging.error(file[7:] + ': image error')
+                logger.error(file[7:] + ': image error')
 
             if show_image:
                 cv2.putText(image, self.status, (120, 210), cv2.FONT_HERSHEY_SIMPLEX, 0.8, self.color, 2)
@@ -67,17 +77,17 @@ class Person:
                 cv2.waitKey(0)
                 cv2.destroyAllWindows()
 
-        np.save(self.models['codes'], self.codes)
-        np.save(self.models['images'], self.faces)
-        np.save(self.models['names'], self.names)
+        np.save(self.models['pc'][0], self.codes)
+        np.save(self.models['pc'][1], self.faces)
+        np.save(self.models['pc'][2], self.names)
 
-        logging.error(self.log.format('Finish', round(time() - init, 2)))
+        logger.success(self.log.format('Finish', round(time() - init, 2)))
 
     def train_rasp(self, show_image=False, resize=240):
 
         init = time()
 
-        for file in glob.glob(os.path.join(self.dataset, '*jpg')):
+        for file in glob.glob(os.path.join(self.dataset['rasp'], '*jpg')):
 
             image = fr.load_image_file(file)
             image = imutils.resize(image, width=resize)
@@ -102,7 +112,7 @@ class Person:
                 self.name = file[7:]
                 self.color = (0, 0, 255)
 
-                logging.error(file[7:] + ': image error')
+                logger.error(file[7:] + ': image error')
 
             if show_image:
                 cv2.putText(image, self.status, (120, 210), cv2.FONT_HERSHEY_SIMPLEX, 0.8, self.color, 2)
@@ -110,8 +120,8 @@ class Person:
                 cv2.waitKey(0)
                 cv2.destroyAllWindows()
 
-        np.save(self.models['codes'], self.codes)
-        np.save(self.models['images'], self.faces)
-        np.save(self.models['names'], self.names)
+        np.save(self.models['rasp'][0], self.codes)
+        np.save(self.models['rasp'][1], self.faces)
+        np.save(self.models['rasp'][2], self.names)
 
-        logging.error(self.log.format('Finish', round(time() - init, 2)))
+        logger.success(self.log.format('Finish', round(time() - init, 2)))
